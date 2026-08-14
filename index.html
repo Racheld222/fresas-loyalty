@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🍓 Hanky Lovers Club 🍓</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Librería externa para generación de QR -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+  <div class="app-card">
+    
+    <!-- PESTAÑAS DE VISTA -->
+    <div class="tabs">
+      <button id="tab-client" class="tab-btn active" onclick="cambiarVista('cliente')">👤 Cliente</button>
+      <button id="tab-admin" class="tab-btn" onclick="cambiarVista('admin')">👑 Administrador</button>
+    </div>
+
+    <!-- ENCABEZADO Y LOGO -->
+    <div class="header">
+      <img src="tu-logo.png" alt="Hankyberri" class="app-logo" onerror="this.style.display='none'">
+      <h1>🍓 Hanky Lovers Club 🍓</h1>
+    </div>
+
+    <!-- ================= VISTA CLIENTE ================= -->
+    <div id="view-client" class="view-content active">
+      
+      <div class="client-info">
+        <h2 id="client-name">Cargando...</h2>
+        <div id="stamp-counter" class="counter-badge">0 / 10 Sellos</div>
+      </div>
+
+      <div id="status-message" class="status-msg">
+       🍓 ¡Te faltan 10 sellos para tu vaso gratis! 🍓
+      </div>
+
+      <div id="reward-banner" class="reward-banner hidden">
+        🎉 ¡RECOMPENSA DISPONIBLE! Muestra tu QR en caja.🍓
+      </div>
+
+      <!-- GRILLA DE 10 SELLOS -->
+      <div id="stamps-grid" class="stamps-grid"></div>
+
+      <!-- CÓDIGO QR -->
+      <div class="qr-container">
+        <p>Tu Código / QR de Cliente:</p>
+        <div id="qrcode"></div>
+        <span id="client-id-code" class="client-id-text">FLC-1001</span>
+      </div>
+
+      <!-- HISTORIAL INDIVIDUAL -->
+      <div class="history-section">
+        <h3>📜 Mi Historial de Sellos</h3>
+        <ul id="client-history-list" class="history-list"></ul>
+      </div>
+
+    </div>
+
+    <!-- ================= VISTA ADMINISTRADOR ================= -->
+    <div id="view-admin" class="view-content">
+      
+      <div class="admin-panel">
+        <h2>Panel de Caja / Registro</h2>
+        
+        <!-- BUSCADOR -->
+        <div class="form-group search-group">
+          <label>Buscar Cliente (ID, Nombre o Teléfono):</label>
+          <div class="search-box">
+            <input type="text" id="admin-search-input" placeholder="Ej. FLC-1001 o 5500001111">
+            <button class="btn btn-secondary" onclick="buscarClienteAdmin()">🔍 Buscar</button>
+          </div>
+        </div>
+
+        <!-- SELECCIONADOR DE CLIENTE -->
+        <div class="form-group">
+          <label>O selecciona de la lista:</label>
+          <select id="admin-client-select" onchange="seleccionarClienteAdmin(this.value)"></select>
+        </div>
+
+        <hr class="divider">
+
+        <!-- DETALLES Y ACCIONES DEL CLIENTE SELECCIONADO -->
+        <div class="admin-action-card">
+          <h3 id="admin-client-name">Cliente</h3>
+          <p>Sellos actuales: <strong id="admin-client-stamps">0/10</strong></p>
+          <p>Estado recompensa: <strong id="admin-client-reward-status">No disponible</strong></p>
+
+          <div class="admin-buttons">
+            <button class="btn btn-primary" onclick="agregarSello()">➕ Agregar 1 Sello 🍓</button>
+            <button id="btn-confirm-redeem" class="btn btn-success" onclick="confirmarCanjeAdmin()" disabled>
+              🎁 Confirmar Canje (Reinicia a 0/10)
+            </button>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- REGISTRAR NUEVO CLIENTE -->
+        <div class="new-client-form">
+          <h3>➕ Registrar Nuevo Cliente</h3>
+          <div class="form-group">
+            <label>Nombre Completo:</label>
+            <input type="text" id="new-name" placeholder="Ej. Maria Lopez">
+          </div>
+          <div class="form-group">
+            <label>Teléfono:</label>
+            <input type="tel" id="new-phone" placeholder="Ej. 5512345678">
+          </div>
+          <button class="btn btn-primary" onclick="registrarCliente()">Registrar Cliente</button>
+        </div>
+
+        <!-- HISTORIAL GLOBAL -->
+        <div class="history-section">
+          <h3>📋 Historial de Caja</h3>
+          <ul id="admin-history-list" class="history-list"></ul>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
