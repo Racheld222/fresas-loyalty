@@ -1,3 +1,6 @@
+// PIN de acceso para Administrador
+const ADMIN_PIN = "1234"; // 👈 Puedes cambiar "1234" por la clave que prefieras
+
 // BASE DE DATOS LOCAL Y ESTADO DE LA APLICACIÓN
 let state = {
   isOnline: true,
@@ -45,8 +48,18 @@ window.onload = function() {
   updateUI();
 };
 
-// CAMBIAR ENTRE PESTAÑAS (CLIENTE / ADMIN)
+// CAMBIAR ENTRE PESTAÑAS (CLIENTE / ADMIN) CON SEGURIDAD POR PIN
 function cambiarVista(vista) {
+  // 🔒 Si intenta entrar a la vista de Administrador, solicita el PIN
+  if (vista === 'admin') {
+    const pass = prompt("Ingresa el PIN de Administrador:");
+    if (pass !== ADMIN_PIN) {
+      alert("❌ PIN incorrecto. Acceso denegado.");
+      return; // Cancela el cambio y permanece en la pestaña de cliente
+    }
+  }
+
+  // Cambia la vista normalmente
   document.getElementById('tab-client').classList.toggle('active', vista === 'cliente');
   document.getElementById('tab-admin').classList.toggle('active', vista === 'admin');
   
@@ -101,7 +114,7 @@ function updateUI() {
     if (i <= client.stamps) {
       // Imagen de la fresita en la casilla circular
       const img = document.createElement('img');
-      img.src = 'fresitaicon.jpeg'; /* O sello.jpg / el nombre con el que guardaste tu imagen de fresa */
+      img.src = 'fresitaicon.jpeg';
       img.alt = 'Sello';
       img.className = 'stamp-img';
       
