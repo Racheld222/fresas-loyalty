@@ -1,5 +1,5 @@
 // PIN de acceso para Administrador
-const ADMIN_PIN = "1234"; // 👈 Puedes cambiar "1234" por la clave que prefieras
+const ADMIN_PIN = "12345"; // 👈 
 
 // BASE DE DATOS LOCAL Y ESTADO DE LA APLICACIÓN
 let state = {
