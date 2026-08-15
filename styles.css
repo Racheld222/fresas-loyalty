@@ -331,3 +331,12 @@ input:focus, select:focus {
   border-left: 3px solid var(--accent-purple);
   color: var(--text);
 }
+/* Oculta los botones de pestañas por defecto para los clientes */
+.tabs {
+  display: none !important;
+}
+
+/* Solo los muestra si entra el Administrador por su enlace secreto */
+body.modo-admin .tabs {
+  display: flex !important;
+}
