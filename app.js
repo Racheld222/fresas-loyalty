@@ -44,6 +44,16 @@ let qrCodeObj = null;
 
 // INICIALIZACIÓN
 window.onload = function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const esAdmin = urlParams.get('admin') === 'true';
+
+  if (esAdmin) {
+    document.body.classList.add('modo-admin');
+    cambiarVista('admin');
+  } else {
+    cambiarVista('cliente');
+  }
+
   renderClientSelectAdmin();
   updateUI();
 };
