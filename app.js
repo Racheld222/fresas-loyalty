@@ -364,6 +364,40 @@ function renderAdminHistory() {
     li.innerHTML = `<strong>${h.fecha}</strong> - <em>${h.clienteName}</em>: ${h.detalle}`;
     list.appendChild(li);
   });
+  // AGREGAR SELLOS
+function agregarSello() {
+  if (!verificarConexion()) return;
+
+  const client = getClienteActual();
+  if (!client) return;
+
+  if (client.stamps >= 10) {
+    alert("⚠️ El cliente ya completó 10 sellos. Debe canjear su recompensa antes de acumular más. 🍓");
+    return;
+  }
+
+  // Incrementa el sello
+  client.stamps += 1;
+
+  // 🎯 JUSTO AL COMPLETAR LOS 10 SELLOS
+  if (client.stamps === 10) {
+    client.rewardAvailable = true;
+    registrarEvento(client, "🎉 ¡Completó 10 sellos! Recompensa lista para canje. 🍓");
+    
+    // Si tiene correo, intenta enviar la notificación inmediatamente
+    if (client.email) {
+      enviarCorreoRecompensa(client);
+      alert(`🎉 ¡${client.name} ha alcanzado 10 sellos! Se activó la recompensa y se envió el correo a ${client.email}. 🍓`);
+    } else {
+      alert(`🎉 ¡${client.name} ha alcanzado 10 sellos! ⚠️ Nota: Esta clienta no tiene correo registrado, por lo que no se le pudo enviar la notificación automática.`);
+    }
+  } else {
+    registrarEvento(client, `➕ Sello agregado (${client.stamps}/10)`);
+  }
+
+  renderClientSelectAdmin();
+  updateUI();
+}
 }
 
 function obtenerFecha() {
