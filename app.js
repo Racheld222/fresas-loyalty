@@ -1,5 +1,5 @@
 // PIN de acceso para Administrador
-const ADMIN_PIN = "12345"; // 👈 
+const ADMIN_PIN = "12345"; 
 
 // BASE DE DATOS LOCAL Y ESTADO DE LA APLICACIÓN
 let state = {
@@ -9,6 +9,7 @@ let state = {
       id: "FLC-1001", 
       name: "Rach", 
       phone: "5500001111", 
+      email: "cliente1@gmail.com",
       stamps: 0, 
       rewardAvailable: false,
       history: [
@@ -19,6 +20,7 @@ let state = {
       id: "FLC-1002", 
       name: "Carlos M.", 
       phone: "5522223333", 
+      email: "carlos@gmail.com",
       stamps: 10, 
       rewardAvailable: true,
       history: [
@@ -29,6 +31,7 @@ let state = {
       id: "FLC-1003", 
       name: "Sofía G.", 
       phone: "5544445555", 
+      email: "sofia@gmail.com",
       stamps: 0, 
       rewardAvailable: false,
       history: [
@@ -65,7 +68,7 @@ function cambiarVista(vista) {
     const pass = prompt("Ingresa el PIN de Administrador:");
     if (pass !== ADMIN_PIN) {
       alert("❌ PIN incorrecto. Acceso denegado.");
-      return; // Cancela el cambio y permanece en la pestaña de cliente
+      return;
     }
   }
 
@@ -122,13 +125,11 @@ function updateUI() {
     slot.className = `stamp-slot ${i <= client.stamps ? 'filled' : ''}`;
     
     if (i <= client.stamps) {
-      // Imagen de la fresita en la casilla circular
       const img = document.createElement('img');
       img.src = 'fresitaicon.jpeg';
       img.alt = 'Sello';
       img.className = 'stamp-img';
       
-      // Respaldo por si no encuentra la imagen
       img.onerror = function() {
         slot.innerText = '🍓';
       };
@@ -210,6 +211,26 @@ function seleccionarClienteAdmin(id) {
   updateUI();
 }
 
+// FUNCIÓN PARA ENVIAR CORREO AUTOMÁTICO VÍA EMAILJS
+function enviarCorreoRecompensa(cliente) {
+  if (!cliente.email) {
+    console.log("El cliente no tiene correo registrado.");
+    return;
+  }
+
+  const templateParams = {
+    client_name: cliente.name,
+    client_email: cliente.email
+  };
+
+  emailjs.send('service_h37djsb', 'template_u9bbjbf', templateParams)
+    .then(function(response) {
+       console.log('✅ Correo de recompensa enviado con éxito:', response.status);
+    }, function(error) {
+       console.error('❌ Error al enviar correo:', error);
+    });
+}
+
 // AGREGAR SELLOS
 function agregarSello() {
   if (!verificarConexion()) return;
@@ -227,22 +248,17 @@ function agregarSello() {
   if (client.stamps === 10) {
     client.rewardAvailable = true;
     registrarEvento(client, "🎉 ¡Completó 10 sellos! Recompensa lista para canje. 🍓");
-    alert(`🎉 ¡${client.name} ha alcanzado 10 sellos! Se activó la recompensa. 🍓`);
+    
+    // Enviar correo automático
+    enviarCorreoRecompensa(client);
+
+    alert(`🎉 ¡${client.name} ha alcanzado 10 sellos! Se activó la recompensa y se le envió su notificación por correo. 🍓`);
   } else {
     registrarEvento(client, `➕ Sello agregado (${client.stamps}/10)`);
   }
 
   renderClientSelectAdmin();
   updateUI();
-  if (client.stamps === 10) {
-  client.rewardAvailable = true;
-  registrarEvento(client, "🎉 ¡Completó 10 sellos! Recompensa lista.");
-  
-  // Enviar correo automático
-  enviarCorreoRecompensa(client);
-
-  alert(`🎉 ¡${client.name} alcanzó 10 sellos y se le envió su correo de notificación! 🍓`);
-}
 }
 
 // CANJE DE RECOMPENSA -> REINICIA A 0/10
@@ -269,14 +285,16 @@ function confirmarCanjeAdmin() {
 function registrarCliente() {
   if (!verificarConexion()) return;
 
-  const nameInput = document.getElementById('new-name');
-  const phoneInput = document.getElementById('new-phone');
+  const nameInput = document.getElementById("new-name");
+  const phoneInput = document.getElementById("new-phone");
+  const emailInput = document.getElementById("new-email");
 
   const name = nameInput.value.trim();
   const phone = phoneInput.value.trim();
+  const email = emailInput.value.trim();
 
-  if (!name || !phone) {
-    alert("Completa el nombre y el teléfono.");
+  if (!name || !phone || !email) {
+    alert("Por favor completa todos los campos (Nombre, Teléfono y Correo).");
     return;
   }
 
@@ -291,6 +309,7 @@ function registrarCliente() {
     id: newId,
     name: name,
     phone: phone,
+    email: email,
     stamps: 0,
     rewardAvailable: false,
     history: []
@@ -301,49 +320,13 @@ function registrarCliente() {
 
   registrarEvento(newClient, "Registro de nuevo cliente.");
 
-  nameInput.value = '';
-  phoneInput.value = '';
-
-  renderClientSelectAdmin();
-  updateUI();
-  alert(`Cliente registrado exitosamente con ID: ${newId}`);
-function registrarCliente() {
-  const nameInput = document.getElementById("new-name");
-  const phoneInput = document.getElementById("new-phone");
-  const emailInput = document.getElementById("new-email"); // 👈 Captura el correo
-
-  const name = nameInput.value.trim();
-  const phone = phoneInput.value.trim();
-  const email = emailInput.value.trim();
-
-  if (!name || !phone || !email) {
-    alert("Por favor completa todos los campos (Nombre, Teléfono y Correo).");
-    return;
-  }
-
-  const newId = "FLC-" + (1001 + clients.length);
-
-  const newClient = {
-    id: newId,
-    name: name,
-    phone: phone,
-    email: email, // 👈 Se guarda en el cliente
-    stamps: 0,
-    rewardAvailable: false,
-    history: []
-  };
-
-  clients.push(newClient);
-  saveClients();
-  renderClientSelectAdmin();
-
-  // Limpiar formulario
   nameInput.value = "";
   phoneInput.value = "";
   emailInput.value = "";
 
+  renderClientSelectAdmin();
+  updateUI();
   alert(`✅ Cliente ${name} registrado con éxito con el ID: ${newId}`);
-}
 }
 
 // HISTORIAL Y EVENTOS
@@ -381,25 +364,6 @@ function renderAdminHistory() {
     li.innerHTML = `<strong>${h.fecha}</strong> - <em>${h.clienteName}</em>: ${h.detalle}`;
     list.appendChild(li);
   });
-  // FUNCIÓN PARA ENVIAR CORREO DE RECOMPENSA AUTOMÁTICO
-function enviarCorreoRecompensa(cliente) {
-  if (!cliente.email) {
-    console.log("El cliente no tiene correo registrado.");
-    return;
-  }
-
-  const templateParams = {
-    client_name: cliente.name,
-    client_email: cliente.email
-  };
-
-  emailjs.send('service_h37djsb', 'template_u9bbjbf', templateParams)
-    .then(function(response) {
-       console.log('✅ Correo de recompensa enviado con éxito:', response.status);
-    }, function(error) {
-       console.error('❌ Error al enviar correo:', error);
-    });
-}
 }
 
 function obtenerFecha() {
