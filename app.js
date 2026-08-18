@@ -234,6 +234,15 @@ function agregarSello() {
 
   renderClientSelectAdmin();
   updateUI();
+  if (client.stamps === 10) {
+  client.rewardAvailable = true;
+  registrarEvento(client, "🎉 ¡Completó 10 sellos! Recompensa lista.");
+  
+  // Enviar correo automático
+  enviarCorreoRecompensa(client);
+
+  alert(`🎉 ¡${client.name} alcanzó 10 sellos y se le envió su correo de notificación! 🍓`);
+}
 }
 
 // CANJE DE RECOMPENSA -> REINICIA A 0/10
@@ -335,6 +344,25 @@ function renderAdminHistory() {
     li.innerHTML = `<strong>${h.fecha}</strong> - <em>${h.clienteName}</em>: ${h.detalle}`;
     list.appendChild(li);
   });
+  // FUNCIÓN PARA ENVIAR CORREO DE RECOMPENSA AUTOMÁTICO
+function enviarCorreoRecompensa(cliente) {
+  if (!cliente.email) {
+    console.log("El cliente no tiene correo registrado.");
+    return;
+  }
+
+  const templateParams = {
+    client_name: cliente.name,
+    client_email: cliente.email
+  };
+
+  emailjs.send('service_h37djsb', 'template_u9bbjbf', templateParams)
+    .then(function(response) {
+       console.log('✅ Correo de recompensa enviado con éxito:', response.status);
+    }, function(error) {
+       console.error('❌ Error al enviar correo:', error);
+    });
+}
 }
 
 function obtenerFecha() {
