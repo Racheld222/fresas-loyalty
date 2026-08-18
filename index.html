@@ -6,10 +6,9 @@
   <title>🍓 Hanky Lovers 🍓</title>
   <!-- LÍNEA DEL LOGO PARA LA PESTAÑA -->
   <link rel="icon" type="image/jpeg" href="logohanky.jpeg">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=4">
   <!-- Librería externa para generación de QR -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-</head>
   <!-- Conexión a EmailJS -->
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <script>
@@ -76,7 +75,7 @@
         
         <!-- BUSCADOR -->
         <div class="form-group search-group">
-          <label>Buscar Cliente (ID, Nombre o Teléfono):</label>
+          <label>Buscar Cliente (ID, Nombre,Teléfono o correo electronico):</label>
           <div class="search-box">
             <input type="text" id="admin-search-input" placeholder="Ej. FLC-1001 o 5500001111">
             <button class="btn btn-secondary" onclick="buscarClienteAdmin()">🔍 Buscar</button>
@@ -108,23 +107,23 @@
         <hr class="divider">
 
         <!-- REGISTRAR NUEVO CLIENTE -->
-<div class="new-client-form">
-  <h3>➕ Registrar Nuevo Cliente</h3>
-  <div class="form-group">
-    <label>Nombre Completo:</label>
-    <input type="text" id="new-name" placeholder="Ej. Maria Lopez">
-  </div>
-  <div class="form-group">
-    <label>Teléfono:</label>
-    <input type="tel" id="new-phone" placeholder="Ej. 5512345678">
-  </div>
-  <!-- ✉️ NUEVA CASILLA PARA EL CORREO -->
-  <div class="form-group">
-    <label>Correo Electrónico:</label>
-    <input type="email" id="new-email" placeholder="Ej. maria@gmail.com">
-  </div>
-  <button class="btn btn-primary" onclick="registrarCliente()">Registrar Cliente</button>
-</div>
+        <div class="new-client-form">
+          <h3>➕ Registrar Nuevo Cliente</h3>
+          <div class="form-group">
+            <label>Nombre Completo:</label>
+            <input type="text" id="new-name" placeholder="Ej. Maria Lopez">
+          </div>
+          <div class="form-group">
+            <label>Teléfono:</label>
+            <input type="tel" id="new-phone" placeholder="Ej. 5512345678">
+          </div>
+          <!-- ✉️ CASILLA PARA EL CORREO -->
+          <div class="form-group">
+            <label>Correo Electrónico:</label>
+            <input type="email" id="new-email" placeholder="Ej. maria@gmail.com">
+          </div>
+          <button class="btn btn-primary" onclick="registrarCliente()">Registrar Cliente</button>
+        </div>
 
         <!-- HISTORIAL GLOBAL -->
         <div class="history-section">
@@ -138,7 +137,7 @@
 
   </div>
 
-  <!-- Carga del archivo JavaScript forzando la actualización de la versión con el PIN -->
-  <script src="app.js?v=2"></script>
+  <!-- Carga del archivo JavaScript forzando la actualización a versión 4 -->
+  <script src="app.js?v=4"></script>
 </body>
 </html>
