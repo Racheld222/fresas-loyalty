@@ -63,7 +63,6 @@ window.onload = function() {
 
 // CAMBIAR ENTRE PESTAÑAS (CLIENTE / ADMIN) CON SEGURIDAD POR PIN
 function cambiarVista(vista) {
-  // 🔒 Si intenta entrar a la vista de Administrador, solicita el PIN
   if (vista === 'admin') {
     const pass = prompt("Ingresa el PIN de Administrador:");
     if (pass !== ADMIN_PIN) {
@@ -72,7 +71,6 @@ function cambiarVista(vista) {
     }
   }
 
-  // Cambia la vista normalmente
   document.getElementById('tab-client').classList.toggle('active', vista === 'cliente');
   document.getElementById('tab-admin').classList.toggle('active', vista === 'admin');
   
@@ -117,7 +115,7 @@ function updateUI() {
     rewardBanner.classList.add('hidden');
   }
 
-  // Dibujar sellos (1 a 10) usando la imagen personalizada
+  // Dibujar sellos (1 a 10)
   const grid = document.getElementById('stamps-grid');
   grid.innerHTML = '';
   for (let i = 1; i <= 10; i++) {
@@ -211,10 +209,10 @@ function seleccionarClienteAdmin(id) {
   updateUI();
 }
 
-// FUNCIÓN PARA ENVIAR CORREO AUTOMÁTICO VÍA EMAILJS
+// ENVÍO DE CORREO AUTOMÁTICO VÍA EMAILJS
 function enviarCorreoRecompensa(cliente) {
-  if (!cliente.email) {
-    console.log("El cliente no tiene correo registrado.");
+  if (!cliente || !cliente.email) {
+    alert("⚠️ Este cliente no tiene un correo electrónico registrado.");
     return;
   }
 
@@ -223,11 +221,14 @@ function enviarCorreoRecompensa(cliente) {
     client_email: cliente.email
   };
 
-  emailjs.send('service_h37djsb', 'template_u9bbjbf', templateParams)
+  // Se utiliza la nueva plantilla 'template_s9iwmug' (Hanky lovers 🍓)
+  emailjs.send('service_h37djsb', 'template_s9iwmug', templateParams)
     .then(function(response) {
        console.log('✅ Correo de recompensa enviado con éxito:', response.status);
+       alert(`📧 ¡Correo de Hanky lovers 🍓 enviado a ${cliente.email}!`);
     }, function(error) {
        console.error('❌ Error al enviar correo:', error);
+       alert(`❌ Error al enviar correo: ${JSON.stringify(error)}`);
     });
 }
 
@@ -249,10 +250,8 @@ function agregarSello() {
     client.rewardAvailable = true;
     registrarEvento(client, "🎉 ¡Completó 10 sellos! Recompensa lista para canje. 🍓");
     
-    // Enviar correo automático
+    // Dispara la notificación por correo al llegar a 10 sellos
     enviarCorreoRecompensa(client);
-
-    alert(`🎉 ¡${client.name} ha alcanzado 10 sellos! Se activó la recompensa y se le envió su notificación por correo. 🍓`);
   } else {
     registrarEvento(client, `➕ Sello agregado (${client.stamps}/10)`);
   }
@@ -364,40 +363,6 @@ function renderAdminHistory() {
     li.innerHTML = `<strong>${h.fecha}</strong> - <em>${h.clienteName}</em>: ${h.detalle}`;
     list.appendChild(li);
   });
-  // AGREGAR SELLOS
-function agregarSello() {
-  if (!verificarConexion()) return;
-
-  const client = getClienteActual();
-  if (!client) return;
-
-  if (client.stamps >= 10) {
-    alert("⚠️ El cliente ya completó 10 sellos. Debe canjear su recompensa antes de acumular más. 🍓");
-    return;
-  }
-
-  // Incrementa el sello
-  client.stamps += 1;
-
-  // 🎯 JUSTO AL COMPLETAR LOS 10 SELLOS
-  if (client.stamps === 10) {
-    client.rewardAvailable = true;
-    registrarEvento(client, "🎉 ¡Completó 10 sellos! Recompensa lista para canje. 🍓");
-    
-    // Si tiene correo, intenta enviar la notificación inmediatamente
-    if (client.email) {
-      enviarCorreoRecompensa(client);
-      alert(`🎉 ¡${client.name} ha alcanzado 10 sellos! Se activó la recompensa y se envió el correo a ${client.email}. 🍓`);
-    } else {
-      alert(`🎉 ¡${client.name} ha alcanzado 10 sellos! ⚠️ Nota: Esta clienta no tiene correo registrado, por lo que no se le pudo enviar la notificación automática.`);
-    }
-  } else {
-    registrarEvento(client, `➕ Sello agregado (${client.stamps}/10)`);
-  }
-
-  renderClientSelectAdmin();
-  updateUI();
-}
 }
 
 function obtenerFecha() {
