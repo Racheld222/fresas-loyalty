@@ -307,24 +307,43 @@ function registrarCliente() {
   renderClientSelectAdmin();
   updateUI();
   alert(`Cliente registrado exitosamente con ID: ${newId}`);
-  <!-- REGISTRAR NUEVO CLIENTE -->
-<div class="new-client-form">
-  <h3>➕ Registrar Nuevo Cliente</h3>
-  <div class="form-group">
-    <label>Nombre Completo:</label>
-    <input type="text" id="new-name" placeholder="Ej. Maria Lopez">
-  </div>
-  <div class="form-group">
-    <label>Teléfono:</label>
-    <input type="tel" id="new-phone" placeholder="Ej. 5512345678">
-  </div>
-  <!-- ✉️ NUEVA CASILLA PARA EL CORREO -->
-  <div class="form-group">
-    <label>Correo Electrónico:</label>
-    <input type="email" id="new-email" placeholder="Ej. maria@gmail.com">
-  </div>
-  <button class="btn btn-primary" onclick="registrarCliente()">Registrar Cliente</button>
-</div>
+function registrarCliente() {
+  const nameInput = document.getElementById("new-name");
+  const phoneInput = document.getElementById("new-phone");
+  const emailInput = document.getElementById("new-email"); // 👈 Captura el correo
+
+  const name = nameInput.value.trim();
+  const phone = phoneInput.value.trim();
+  const email = emailInput.value.trim();
+
+  if (!name || !phone || !email) {
+    alert("Por favor completa todos los campos (Nombre, Teléfono y Correo).");
+    return;
+  }
+
+  const newId = "FLC-" + (1001 + clients.length);
+
+  const newClient = {
+    id: newId,
+    name: name,
+    phone: phone,
+    email: email, // 👈 Se guarda en el cliente
+    stamps: 0,
+    rewardAvailable: false,
+    history: []
+  };
+
+  clients.push(newClient);
+  saveClients();
+  renderClientSelectAdmin();
+
+  // Limpiar formulario
+  nameInput.value = "";
+  phoneInput.value = "";
+  emailInput.value = "";
+
+  alert(`✅ Cliente ${name} registrado con éxito con el ID: ${newId}`);
+}
 }
 
 // HISTORIAL Y EVENTOS
