@@ -1,21 +1,25 @@
-// LISTA DE EMPLEADOS Y PINS (Puedes cambiar o agregar más)
+// LISTA DE EMPLEADOS Y PINS POR SUCURSAL
 const STAFF_USERS = [
-  { pin: "1001", name: "Rach", branch: "Polanco" },
-  { pin: "1002", name: "Ana P.", branch: "Míthikah" },
-  { pin: "1003", name: "Luis M.", branch: "Paseo Interlomas" },
-  { pin: "1004", name: "Carla G.", branch: "Mundo E" },
-  { pin: "1005", name: "Diego R.", branch: "Plaza Satélite" },
-  { pin: "1006", name: "Sofía T.", branch: "TPH Peri Sur" },
-  { pin: "1007", name: "Jorge V.", branch: "TPH Satélite" },
-  { pin: "1008", name: "Elena F.", branch: "TPH Santa Fe" }
+  { pin: "2002", name: "Rachel Cortes", branch: "Satelite" },
+  { pin: "2007", name: "Renata Garcia", branch: "Satelite" },
+  { pin: "1002", name: "Personal1", branch: "Míthikah" },
+  { pin: "1003", name: "Personal2", branch: "Paseo Interlomas" },
+  { pin: "1004", name: "Personal3", branch: "Mundo E" },
+  { pin: "1005", name: "Personal4", branch: "Plaza Satélite" },
+  { pin: "1006", name: "Personal5", branch: "TPH Peri Sur" },
+  { pin: "1007", name: "Personal6", branch: "TPH Satélite" },
+  { pin: "1008", name: "Personal7", branch: "TPH Santa Fe" }
 ];
 
 let activeStaff = null; // Cajero con sesión iniciada
 
-// BASE DE DATOS LOCAL Y ESTADO DE LA APLICACIÓN
+// CARGAR O INICIALIZAR BASE DE DATOS DESDE LOCALSTORAGE
+const savedClients = localStorage.getItem('hanky_clients');
+const savedHistory = localStorage.getItem('hanky_history');
+
 let state = {
   isOnline: true,
-  clients: [
+  clients: savedClients ? JSON.parse(savedClients) : [
     { 
       id: "FLC-1001", 
       name: "Rach", 
@@ -40,10 +44,16 @@ let state = {
     }
   ],
   currentClientId: "FLC-1001",
-  globalHistory: []
+  globalHistory: savedHistory ? JSON.parse(savedHistory) : []
 };
 
 let qrCodeObj = null;
+
+// PERSISTENCIA EN NAVEGADOR
+function guardarEnLocalStorage() {
+  localStorage.setItem('hanky_clients', JSON.stringify(state.clients));
+  localStorage.setItem('hanky_history', JSON.stringify(state.globalHistory));
+}
 
 // INICIALIZACIÓN
 window.onload = function() {
@@ -70,7 +80,7 @@ function cambiarVista(vista) {
     const foundStaff = STAFF_USERS.find(u => u.pin === inputPin.trim());
     if (foundStaff) {
       activeStaff = foundStaff;
-      alert(`✅ bienvenido(a) ${activeStaff.name} [Sucursal ${activeStaff.branch}]`);
+      alert(`✅ Bienvenido(a) ${activeStaff.name} [Sucursal ${activeStaff.branch}]`);
     } else {
       alert("❌ PIN de cajero no válido.");
       return;
@@ -242,7 +252,7 @@ function enviarCorreoRecompensa(cliente) {
     });
 }
 
-// AGREGAR SELLOS (AUDITADO CON CAJERO Y SUCURSAL)
+// AGREGAR SELLOS (AUDITADO Y PERSISTENTE)
 function agregarSello() {
   if (!verificarConexion()) return;
 
@@ -267,9 +277,10 @@ function agregarSello() {
 
   renderClientSelectAdmin();
   updateUI();
+  guardarEnLocalStorage();
 }
 
-// CANJE DE RECOMPENSA (AUDITADO)
+// CANJE DE RECOMPENSA (AUDITADO Y PERSISTENTE)
 function confirmarCanjeAdmin() {
   if (!verificarConexion()) return;
 
@@ -287,9 +298,10 @@ function confirmarCanjeAdmin() {
 
   renderClientSelectAdmin();
   updateUI();
+  guardarEnLocalStorage();
 }
 
-// REGISTRAR NUEVO CLIENTE
+// REGISTRAR NUEVO CLIENTE (PERSISTENTE)
 function registrarCliente() {
   if (!verificarConexion()) return;
 
@@ -334,6 +346,7 @@ function registrarCliente() {
 
   renderClientSelectAdmin();
   updateUI();
+  guardarEnLocalStorage();
   alert(`✅ Cliente ${name} registrado con ID: ${newId}`);
 }
 
