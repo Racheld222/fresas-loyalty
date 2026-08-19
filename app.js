@@ -1,5 +1,16 @@
-// PIN de acceso para Administrador
-const ADMIN_PIN = "12345"; 
+// LISTA DE EMPLEADOS Y PINS (Puedes cambiar o agregar más)
+const STAFF_USERS = [
+  { pin: "1001", name: "Rach", branch: "Polanco" },
+  { pin: "1002", name: "Ana P.", branch: "Míthikah" },
+  { pin: "1003", name: "Luis M.", branch: "Paseo Interlomas" },
+  { pin: "1004", name: "Carla G.", branch: "Mundo E" },
+  { pin: "1005", name: "Diego R.", branch: "Plaza Satélite" },
+  { pin: "1006", name: "Sofía T.", branch: "TPH Peri Sur" },
+  { pin: "1007", name: "Jorge V.", branch: "TPH Satélite" },
+  { pin: "1008", name: "Elena F.", branch: "TPH Santa Fe" }
+];
+
+let activeStaff = null; // Cajero con sesión iniciada
 
 // BASE DE DATOS LOCAL Y ESTADO DE LA APLICACIÓN
 let state = {
@@ -26,17 +37,6 @@ let state = {
       history: [
         { fecha: "07/08/2026 12:00", detalle: "Llegó a 10 sellos. Recompensa lista." }
       ]
-    },
-    { 
-      id: "FLC-1003", 
-      name: "Sofía G.", 
-      phone: "5544445555", 
-      email: "sofia@gmail.com",
-      stamps: 0, 
-      rewardAvailable: false,
-      history: [
-        { fecha: "08/08/2026 10:00", detalle: "Cliente registrado" }
-      ]
     }
   ],
   currentClientId: "FLC-1001",
@@ -61,12 +61,18 @@ window.onload = function() {
   updateUI();
 };
 
-// CAMBIAR ENTRE PESTAÑAS (CLIENTE / ADMIN) CON SEGURIDAD POR PIN
+// VISTA / AUTENTICACIÓN DE CAJERO POR PIN INDIVIDUAL
 function cambiarVista(vista) {
-  if (vista === 'admin') {
-    const pass = prompt("Ingresa el PIN de Administrador:");
-    if (pass !== ADMIN_PIN) {
-      alert("❌ PIN incorrecto. Acceso denegado.");
+  if (vista === 'admin' && !activeStaff) {
+    const inputPin = prompt("🔑 Ingresa tu PIN de Cajero:");
+    if (!inputPin) return;
+
+    const foundStaff = STAFF_USERS.find(u => u.pin === inputPin.trim());
+    if (foundStaff) {
+      activeStaff = foundStaff;
+      alert(`✅ bienvenido(a) ${activeStaff.name} [Sucursal ${activeStaff.branch}]`);
+    } else {
+      alert("❌ PIN de cajero no válido.");
       return;
     }
   }
@@ -76,16 +82,34 @@ function cambiarVista(vista) {
   
   document.getElementById('view-client').classList.toggle('active', vista === 'cliente');
   document.getElementById('view-admin').classList.toggle('active', vista === 'admin');
+
+  updateStaffBar();
+}
+
+function cerrarSesionCajero() {
+  activeStaff = null;
+  alert("Sesión de caja cerrada.");
+  cambiarVista('cliente');
+}
+
+function updateStaffBar() {
+  const staffBar = document.getElementById('staff-bar');
+  if (activeStaff) {
+    document.getElementById('active-staff-name').innerText = activeStaff.name;
+    document.getElementById('active-staff-branch').innerText = activeStaff.branch;
+    staffBar.classList.remove('hidden');
+  } else {
+    staffBar.classList.add('hidden');
+  }
 }
 
 function getClienteActual() {
   return state.clients.find(c => c.id === state.currentClientId);
 }
 
-// SIMULADOR DE CONEXIÓN
 function verificarConexion() {
   if (!state.isOnline) {
-    alert("⚠️ Error de conexión: No se pudo conectar con el servidor. Intenta de nuevo.");
+    alert("⚠️ Error de conexión: No se pudo conectar con el servidor.");
     return false;
   }
   return true;
@@ -96,7 +120,7 @@ function updateUI() {
   const client = getClienteActual();
   if (!client) return;
 
-  // --- VISTA CLIENTE ---
+  // Vista Cliente
   document.getElementById('client-name').innerText = client.name;
   document.getElementById('stamp-counter').innerText = `${client.stamps} / 10`;
   document.getElementById('client-id-code').innerText = client.id;
@@ -115,7 +139,7 @@ function updateUI() {
     rewardBanner.classList.add('hidden');
   }
 
-  // Dibujar sellos (1 a 10)
+  // Dibujar sellos
   const grid = document.getElementById('stamps-grid');
   grid.innerHTML = '';
   for (let i = 1; i <= 10; i++) {
@@ -127,25 +151,18 @@ function updateUI() {
       img.src = 'fresitaicon.jpeg';
       img.alt = 'Sello';
       img.className = 'stamp-img';
-      
-      img.onerror = function() {
-        slot.innerText = '🍓';
-      };
+      img.onerror = function() { slot.innerText = '🍓'; };
       slot.appendChild(img);
     } else {
       slot.innerText = i;
     }
-    
     grid.appendChild(slot);
   }
 
-  // Generar QR Dinámico
   generarQR(client.id);
-
-  // Renderizar historial
   renderClientHistory(client);
 
-  // --- VISTA ADMIN ---
+  // Vista Admin
   document.getElementById('admin-client-name').innerText = `${client.name} (${client.id})`;
   document.getElementById('admin-client-stamps').innerText = `${client.stamps}/10`;
   document.getElementById('admin-client-reward-status').innerText = client.rewardAvailable ? "🎉 Disponible" : "No disponible";
@@ -154,7 +171,6 @@ function updateUI() {
   renderAdminHistory();
 }
 
-// GENERAR QR
 function generarQR(texto) {
   const container = document.getElementById('qrcode');
   container.innerHTML = '';
@@ -167,20 +183,20 @@ function generarQR(texto) {
   });
 }
 
-// BUSCADOR EN ADMIN
 function buscarClienteAdmin() {
   if (!verificarConexion()) return;
 
   const query = document.getElementById('admin-search-input').value.trim().toLowerCase();
   if (!query) {
-    alert("Ingresa un ID, nombre o teléfono para buscar.");
+    alert("Ingresa un ID, nombre, teléfono o correo para buscar.");
     return;
   }
 
   const encon = state.clients.find(c => 
     c.id.toLowerCase() === query || 
     c.name.toLowerCase().includes(query) || 
-    c.phone.includes(query)
+    c.phone.includes(query) ||
+    (c.email && c.email.toLowerCase().includes(query))
   );
 
   if (encon) {
@@ -188,7 +204,7 @@ function buscarClienteAdmin() {
     renderClientSelectAdmin();
     updateUI();
   } else {
-    alert("❌ Error: Cliente inexistente. Verifica el código o regístralo.");
+    alert("❌ Error: Cliente inexistente.");
   }
 }
 
@@ -209,30 +225,24 @@ function seleccionarClienteAdmin(id) {
   updateUI();
 }
 
-// ENVÍO DE CORREO AUTOMÁTICO VÍA EMAILJS
+// CORREO AUTOMÁTICO VÍA EMAILJS
 function enviarCorreoRecompensa(cliente) {
-  if (!cliente || !cliente.email) {
-    alert("⚠️ Este cliente no tiene un correo electrónico registrado.");
-    return;
-  }
+  if (!cliente || !cliente.email) return;
 
   const templateParams = {
     client_name: cliente.name,
     client_email: cliente.email
   };
 
-  // Se utiliza la nueva plantilla 'template_s9iwmug' (Hanky lovers 🍓)
   emailjs.send('service_h37djsb', 'template_s9iwmug', templateParams)
     .then(function(response) {
        console.log('✅ Correo de recompensa enviado con éxito:', response.status);
-       alert(`📧 ¡Correo de Hanky lovers 🍓 enviado a ${cliente.email}!`);
     }, function(error) {
        console.error('❌ Error al enviar correo:', error);
-       alert(`❌ Error al enviar correo: ${JSON.stringify(error)}`);
     });
 }
 
-// AGREGAR SELLOS
+// AGREGAR SELLOS (AUDITADO CON CAJERO Y SUCURSAL)
 function agregarSello() {
   if (!verificarConexion()) return;
 
@@ -240,7 +250,7 @@ function agregarSello() {
   if (!client) return;
 
   if (client.stamps >= 10) {
-    alert("⚠️ El cliente ya completó 10 sellos. Debe canjear su recompensa antes de acumular más. 🍓");
+    alert("⚠️ El cliente ya completó 10 sellos. Debe canjear su recompensa.");
     return;
   }
 
@@ -248,10 +258,9 @@ function agregarSello() {
 
   if (client.stamps === 10) {
     client.rewardAvailable = true;
-    registrarEvento(client, "🎉 ¡Completó 10 sellos! Recompensa lista para canje. 🍓");
-    
-    // Dispara la notificación por correo al llegar a 10 sellos
+    registrarEvento(client, "🎉 ¡Completó 10 sellos! Recompensa lista.");
     enviarCorreoRecompensa(client);
+    alert(`🎉 ¡${client.name} alcanzó 10 sellos! Se envió correo de notificación.`);
   } else {
     registrarEvento(client, `➕ Sello agregado (${client.stamps}/10)`);
   }
@@ -260,21 +269,21 @@ function agregarSello() {
   updateUI();
 }
 
-// CANJE DE RECOMPENSA -> REINICIA A 0/10
+// CANJE DE RECOMPENSA (AUDITADO)
 function confirmarCanjeAdmin() {
   if (!verificarConexion()) return;
 
   const client = getClienteActual();
   if (!client || !client.rewardAvailable) {
-    alert("Este cliente no tiene una recompensa activa para canjear.");
+    alert("Este cliente no tiene una recompensa activa.");
     return;
   }
 
   client.stamps = 0; 
   client.rewardAvailable = false;
 
-  registrarEvento(client, '✅ Recompensa canjeada "Vaso de Fresas Gratis" 🍓. Tarjeta reiniciada a 0/10 sellos.');
-  alert(`✅ Canje confirmado para ${client.name}.\n\nRecordatorio: TOPPINGS SE COBRAN ADICIONAL\nSu tarjeta ha sido establecida en 0/10 sellos.`);
+  registrarEvento(client, '✅ Recompensa canjeada "Vaso Gratis" 🍓.');
+  alert(`✅ Canje confirmado para ${client.name}. Tarjeta reiniciada a 0/10.`);
 
   renderClientSelectAdmin();
   updateUI();
@@ -293,13 +302,13 @@ function registrarCliente() {
   const email = emailInput.value.trim();
 
   if (!name || !phone || !email) {
-    alert("Por favor completa todos los campos (Nombre, Teléfono y Correo).");
+    alert("Por favor completa todos los campos.");
     return;
   }
 
   const existe = state.clients.some(c => c.phone === phone);
   if (existe) {
-    alert("⚠️ Cliente duplicado: Ya existe un registro asociado a este número de teléfono.");
+    alert("⚠️ Ya existe un cliente con este teléfono.");
     return;
   }
 
@@ -325,16 +334,19 @@ function registrarCliente() {
 
   renderClientSelectAdmin();
   updateUI();
-  alert(`✅ Cliente ${name} registrado con éxito con el ID: ${newId}`);
+  alert(`✅ Cliente ${name} registrado con ID: ${newId}`);
 }
 
-// HISTORIAL Y EVENTOS
+// REGISTRO DE EVENTOS CON MARCA DE TIEMPO, CAJERO Y SUCURSAL
 function registrarEvento(cliente, detalle) {
   const fecha = obtenerFecha();
-  const item = { fecha, detalle };
+  const staffInfo = activeStaff ? `${activeStaff.name} [${activeStaff.branch}]` : "Sistema";
 
-  cliente.history.unshift(item);
-  state.globalHistory.unshift({ fecha, clienteName: cliente.name, detalle });
+  const itemCliente = { fecha, detalle: `${detalle} (Atendió: ${staffInfo})` };
+  const itemGlobal = { fecha, clienteName: cliente.name, detalle, staffInfo };
+
+  cliente.history.unshift(itemCliente);
+  state.globalHistory.unshift(itemGlobal);
 }
 
 function renderClientHistory(client) {
@@ -360,7 +372,7 @@ function renderAdminHistory() {
   }
   state.globalHistory.forEach(h => {
     const li = document.createElement('li');
-    li.innerHTML = `<strong>${h.fecha}</strong> - <em>${h.clienteName}</em>: ${h.detalle}`;
+    li.innerHTML = `<strong>${h.fecha}</strong> - <em>${h.clienteName}</em>: ${h.detalle} <br><small style="color:#666;">📌 Atendido por: ${h.staffInfo}</small>`;
     list.appendChild(li);
   });
 }
